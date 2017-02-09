@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Inventory App</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_clearall">Clear Database</string>
+    <string name="action_dummy">Insert Dummy Data</string>
+    <string name="empty_view_title_text">Empty? Oh..NO!!!</string>
+    <string name="empty_view_subtitle_text">Just add something</string>
+    <string name="title_activity_editor">EditorActivity</string>
+    <string name="order_more_item">Order more item.</string>
+
+    <string name="unsaved_changes_dialog_msg">Discard your changes and quit editing?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
+
+    <string name="delete_dialog_msg">Delete this pet?</string>
+    <string name="delete_all_msg">Are you sure delete all data?\nNO WAY TO RECOVERY!!!</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="item_change_saved">Item change saved.</string>
+    <string name="error_edit">Error with edit item.</string>
+    <string name="new_item_saved">New item saved.</string>
+    <string name="error_adding">Error with adding item.</string>
+    <string name="edit_item">Edit item</string>
+    <string name="add_item">Add a new item</string>
+    <string name="sale_counts">Sale counts</string>
+    <string name="stock">Stock</string>
+    <string name="name">Name</string>
+    <string name="price">Price</string>
+    <string name="delete_btn">DELETE</string>
+    <string name="save_btn">SAVE</string>
+    <string name="order_more">"I want order more "</string>
+    <string name="need_name">Need a item name</string>
+    <string name="need_stock">Need a stock amount</string>
+    <string name="need_price">Incredible,it\'s priceless!\n You should set a price.</string>
+    <string name="sold">One item sold.</string>
+
+</resources>
