@@ -33,5 +33,7 @@
     <string name="need_stock">Need a stock amount</string>
     <string name="need_price">Incredible,it\'s priceless!\n You should set a price.</string>
     <string name="sold">One item sold.</string>
+    <string name="choose_photo">Choose a photo from photo album.</string>
+    <string name="take_photo">Take a photo from camera.</string>
 
 </resources>

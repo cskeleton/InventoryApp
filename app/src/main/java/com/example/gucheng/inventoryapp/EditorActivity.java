@@ -1,26 +1,26 @@
 package com.example.gucheng.inventoryapp;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.SyncStateContract;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.example.gucheng.inventoryapp.data.GcContract.GcEntry;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.util.Objects;
 
 public class EditorActivity extends AppCompatActivity
@@ -38,17 +38,15 @@ public class EditorActivity extends AppCompatActivity
 
     private static final int EXISTING_LOADER = 0;
 
-    private static final int OPEN_ALBUM = 0;    //调用相册照片
-    private static final int TAKE_PHOTO = 1;    //调用相机拍照
-    private static final int CROP_PHOTO = 2;    //裁剪照片
+
+    private static final int CAMERA_REQUEST = 100;  //Open camera.
+    private static final int OPEN_ALBUM = 200;     //Open Gallery.
 
     private EditText mNameEditText;
     private EditText mStockEditText;
     private EditText mSaleEditText;
     private EditText mPriceEditText;
     private ImageView mImageView;
-    private Button deleteButton;
-    private Button saveButton;
 
     private Uri currentUri;
 
@@ -59,6 +57,7 @@ public class EditorActivity extends AppCompatActivity
     private int sale;
     private int price;
     private Bitmap bitmap;
+    private byte[] imgByte;
 
     private String nameString;
     private int stockInt = 0;
@@ -77,21 +76,22 @@ public class EditorActivity extends AppCompatActivity
         mStockEditText = (EditText) findViewById(R.id.stock_edit);
         mSaleEditText = (EditText) findViewById(R.id.sale_edit);
         mPriceEditText = (EditText) findViewById(R.id.price_edit);
+        mImageView = (ImageView) findViewById(R.id.pic_text);
 
-        deleteButton = (Button) findViewById(R.id.delete_button);
-        saveButton = (Button) findViewById(R.id.save_button);
-        mImageView = (ImageView) findViewById(R.id.pic_btn);
+
+        Button deleteButton = (Button) findViewById(R.id.delete_button);
+        Button saveButton = (Button) findViewById(R.id.save_button);
 
         Intent intent = getIntent();
         currentUri = intent.getData();
         if(currentUri == null){
             setTitle(getString(R.string.add_item));
             deleteButton.setVisibility(View.GONE);
+            mImageView.setImageResource(R.drawable.placeholder);
         }else {
             setTitle(getString(R.string.edit_item));
             getLoaderManager().initLoader(EXISTING_LOADER,null,this);
         }
-
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,19 +119,76 @@ public class EditorActivity extends AppCompatActivity
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setImage();
+                showPopMenu(v);
             }
         });
     }
 
-    private void setImage(){
+    // select a photo from photo album.
+    private void openGallery(){
         Intent choosePic = new Intent(Intent.ACTION_PICK);
         choosePic.setType("image/*");
         startActivityForResult(choosePic,OPEN_ALBUM);
     }
 
+
+    //get a photo from camera.
+    private void openCamera(){
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent,CAMERA_REQUEST);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK){
+            bitmap = (Bitmap) data.getExtras().get("data");
+            mImageView.setImageBitmap(bitmap);
+        } else if (data != null) {
+            Uri uri = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+            Cursor cursor = getContentResolver().query(uri,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            mImageView.setImageURI(uri);
+            bitmap = BitmapFactory.decodeFile(picturePath);
+        }
+    }
+
+    // Setup a popup menu for adding photo from either camera or photo album.
+    private void showPopMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(EditorActivity.this, view);
+        android.view.Menu menu_more = popupMenu.getMenu();
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.popup_menu, menu_more);
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.camera:
+                        openCamera();
+                        break;
+                    case R.id.gallery:
+                        openGallery();
+                        break;
+                    case R.id.cancel:
+                        break;
+                    default:
+                        break;
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
+    }
+
     //For helping judge EditTexts if changed.
     private void setEditData(){
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
         nameString = mNameEditText.getText().toString().trim();
         String stockString = mStockEditText.getText().toString().trim();
         String saleString = mSaleEditText.getText().toString().trim();
@@ -147,6 +204,12 @@ public class EditorActivity extends AppCompatActivity
         if(!TextUtils.isEmpty(priceString)){
             priceInt = Integer.parseInt(priceString);
         }
+        if(bitmap != null) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 80, os);
+            imgByte = os.toByteArray();
+        }else {
+            imgByte = null;
+        }
     }
 
     private void saveItem(){
@@ -156,6 +219,7 @@ public class EditorActivity extends AppCompatActivity
         values.put(GcEntry.COLUMN_GC_STOCK,stockInt);
         values.put(GcEntry.COLUMN_GC_SALE,saleInt);
         values.put(GcEntry.COLUMN_GC_PRICE,priceInt);
+        values.put(GcEntry.COLUMN_GC_IMAGE,imgByte);
 
         if(currentUri == null){
             Uri mNewUri = getContentResolver().insert(GcEntry.CONTENT_URI,values);
@@ -294,7 +358,8 @@ public class EditorActivity extends AppCompatActivity
                 GcEntry.COLUMN_GC_NAME,
                 GcEntry.COLUMN_GC_STOCK,
                 GcEntry.COLUMN_GC_SALE,
-                GcEntry.COLUMN_GC_PRICE
+                GcEntry.COLUMN_GC_PRICE,
+                GcEntry.COLUMN_GC_IMAGE
         };
         return new CursorLoader(this,currentUri,projection,null,null,null);
     }
@@ -309,16 +374,24 @@ public class EditorActivity extends AppCompatActivity
             int stockColumnIndex = cursor.getColumnIndex(GcEntry.COLUMN_GC_STOCK);
             int saleColumnIndex = cursor.getColumnIndex(GcEntry.COLUMN_GC_SALE);
             int priceColumnIndex = cursor.getColumnIndex(GcEntry.COLUMN_GC_PRICE);
+            int imageByteIndex = cursor.getColumnIndex(GcEntry.COLUMN_GC_IMAGE);
 
             name = cursor.getString(nameColumnIndex);
             stock = cursor.getInt(stockColumnIndex);
             sale = cursor.getInt(saleColumnIndex);
             price = cursor.getInt(priceColumnIndex);
+            imgByte = cursor.getBlob(imageByteIndex);
 
             mNameEditText.setText(name);
             mStockEditText.setText(Integer.toString(stock));
             mSaleEditText.setText(Integer.toString(sale));
             mPriceEditText.setText(Integer.toString(price));
+            if(imgByte != null) {
+                bitmap = BitmapFactory.decodeByteArray(imgByte, 0, imgByte.length);
+                mImageView.setImageBitmap(bitmap);
+            }else {
+                mImageView.setImageResource(R.drawable.placeholder);
+            }
         }
     }
 
@@ -328,5 +401,6 @@ public class EditorActivity extends AppCompatActivity
         mStockEditText.setText(null);
         mSaleEditText.setText(null);
         mPriceEditText.setText(null);
+        mImageView.setImageBitmap(null);
     }
 }

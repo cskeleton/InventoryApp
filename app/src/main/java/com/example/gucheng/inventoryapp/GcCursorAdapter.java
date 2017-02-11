@@ -38,14 +38,15 @@ class GcCursorAdapter extends CursorAdapter {
         Button button = (Button) view.findViewById(R.id.sale_btn);
 
         String name = cursor.getString(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_NAME));
-        String count = cursor.getString(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_SALE));
+        String sale = cursor.getString(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_SALE));
         String stock = cursor.getString(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_STOCK));
         String price = cursor.getString(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_PRICE));
         final int position = cursor.getPosition();
 
         tvName.setText(name);
-        tvStock.setText("Stocks: " + stock + " ,Sale Times: " + count);
+        tvStock.setText("Stocks: " + stock + " ,Sale Times: " + sale);
         tvPrice.setText(price);
+
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,6 +57,7 @@ class GcCursorAdapter extends CursorAdapter {
                 int stockInt = cursor.getInt(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_STOCK));
                 int saleInt = cursor.getInt(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_SALE));
                 int priceInt = cursor.getInt(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_PRICE));
+                String imgString = cursor.getString(cursor.getColumnIndexOrThrow(GcEntry.COLUMN_GC_IMAGE));
                 if (stockInt > 0){
                     stockInt--;
                     saleInt++;
@@ -66,6 +68,7 @@ class GcCursorAdapter extends CursorAdapter {
                 cv.put(GcEntry.COLUMN_GC_STOCK,stockInt);
                 cv.put(GcEntry.COLUMN_GC_SALE,saleInt);
                 cv.put(GcEntry.COLUMN_GC_PRICE,priceInt);
+                cv.put(GcEntry.COLUMN_GC_IMAGE,imgString);
                 context.getContentResolver().update(uri,cv,null,null);
             }
         });

@@ -12,7 +12,7 @@ import com.example.gucheng.inventoryapp.data.GcContract.GcEntry;
 
 class DbHelper extends SQLiteOpenHelper {
 
-    private final static int TABLE_VERSION = 1;
+    private final static int TABLE_VERSION = 0;
 
     DbHelper(Context context) {
         super(context, GcEntry.TABLE_NAME, null, TABLE_VERSION);
@@ -26,7 +26,7 @@ class DbHelper extends SQLiteOpenHelper {
                 GcEntry.COLUMN_GC_SALE + " INTEGER DEFAULT 0," +
                 GcEntry.COLUMN_GC_STOCK + " INTEGER NOT NULL DEFAULT 0," +
                 GcEntry.COLUMN_GC_PRICE + " INTEGER NOT NULL DEFAULT 0," +
-                GcEntry.COLUMN_GC_IMAGE + " BLOB" + ");";
+                GcEntry.COLUMN_GC_IMAGE + " BLOB" + " );";
         db.execSQL(SQL_CREATE_TABLE);
     }
 
