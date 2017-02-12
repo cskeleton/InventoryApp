@@ -12,7 +12,7 @@ import com.example.gucheng.inventoryapp.data.GcContract.GcEntry;
 
 class DbHelper extends SQLiteOpenHelper {
 
-    private final static int TABLE_VERSION = 0;
+    private final static int TABLE_VERSION = 2;
 
     DbHelper(Context context) {
         super(context, GcEntry.TABLE_NAME, null, TABLE_VERSION);
